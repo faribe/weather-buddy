@@ -20,7 +20,7 @@ class CreateLocationsTable extends Migration
             $table->string('latitude');
             $table->string('longitutde');
             $table->string('country');
-            $table->string('state');
+            $table->string('state')->nullable();
             $table->timestamps();
         });
     }

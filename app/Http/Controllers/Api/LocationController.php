@@ -3,42 +3,29 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\CurrentWeather;
 use App\Models\Location;
-use App\Models\WeeklyWeather;
 use App\Services\WeatherService;
 use Illuminate\Http\Request;
 
-class WeatherController extends Controller
+class LocationController extends Controller
 {
 
-    public function fetchAndStoreWeatherData(Location $location)
+    public function fetchAndStoreLocationData($name)
     {
         $weatherService = new WeatherService();
-        $weatherData = $weatherService->getDailyWeather($location);
+        $locationData = $weatherService->getLocationInformation($name);
+        $data_array = (array) $locationData;
 
-        $currentWeatherData = $weatherData['current'];
-        $currentWeatherData['locations_id'] = $location->id;
-        $currentWeatherData['temperature'] = $currentWeatherData['temp'];
-        $currentWeatherData['weather'] = json_encode($weatherData['current']['weather'][0]);
-        $currentWeatherData['rain'] = isset($currentWeatherData['temp']) ? json_encode($currentWeatherData['temp']) : null;
-        unset($currentWeatherData['temp']);
+        $data_array['local_names'] = json_encode((array) $data_array['local_names']);
+        $data_array['latitude'] = $data_array['lat'];
+        $data_array['longitutde'] = $data_array['lon'];
 
-        $currentWeather = CurrentWeather::create($currentWeatherData);
+        unset($data_array['lat'],$data_array['lon']);
 
-        $weeklyWeatherData = $weatherData['daily'];
 
-        foreach($weeklyWeatherData as $datum){
-            $datum['current_weather_id'] = $currentWeather->id;
-            $datum['temperature'] = json_encode($datum['temp']);
-            $datum['feels_like'] = json_encode($datum['feels_like']);
-            $datum['weather'] = json_encode($datum['weather'][0]);
-            unset($datum['temp']);
+        $location = Location::create($data_array);
 
-            WeeklyWeather::create($datum);
-        }
-        
-        if($currentWeather){
+        if($location){
             return true;
         } else {
             return false;

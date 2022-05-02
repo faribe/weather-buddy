@@ -21,7 +21,7 @@ class CreateWeeklyWeatherTable extends Migration
             $table->integer('sunset');
             $table->integer('moonrise');
             $table->integer('moonset');
-            $table->integer('moon_phase');
+            $table->string('moon_phase');
             $table->longText('temperature');
             $table->longText('feels_like');
             $table->string('pressure');
@@ -30,11 +30,12 @@ class CreateWeeklyWeatherTable extends Migration
             $table->string('uvi');
             $table->string('clouds');
             $table->string('pop');
-            $table->string('visibility');
+            $table->string('visibility')->nullable();
             $table->string('wind_speed');
             $table->string('wind_deg');
-            $table->string('wind_gust');
+            $table->string('wind_gust')->nullable();
             $table->longText('weather');
+            $table->longText('rain')->nullable();
             $table->timestamps();
         });
     }

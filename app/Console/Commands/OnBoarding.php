@@ -2,24 +2,23 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\FetchDailyWeather;
 use Illuminate\Console\Command;
 
-class DailyWeatherUpdates extends Command
+class OnBoarding extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'daily:weather';
+    protected $signature = 'onboarding:seed';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Fetch Every 6 hours weather update';
+    protected $description = 'Command description';
 
     /**
      * Create a new command instance.
@@ -38,6 +37,17 @@ class DailyWeatherUpdates extends Command
      */
     public function handle()
     {
-        FetchDailyWeather::dispatch()->onQueue('default');
+        // Seeding with the given cities
+        $cities = [
+            'New York',
+            'London',
+            'Paris',
+            'Berlin',
+            'Tokyo'
+        ];
+
+        foreach($cities as $city){
+            $this->call('location:geocode', ['name' => $city]);
+        }
     }
 }

@@ -29,7 +29,9 @@ class CreateCurrentWeatherTable extends Migration
             $table->string('visibility');
             $table->string('wind_speed');
             $table->string('wind_deg');
+            $table->string('wind_gust')->nullable();
             $table->longText('weather');
+            $table->longText('rain')->nullable();
             $table->timestamps();
         });
     }
