@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Http;
 
 class WeatherService
 {
+    /**
+     * Fetch Data from third party API Daily Weather
+     */
     public function getDailyWeather($location)
     {
         $today = Carbon::now()->getTimestamp();
@@ -18,6 +21,9 @@ class WeatherService
         
     }
 
+    /**
+     * Fetch Data from third party API Daily Weather On Demand
+     */
     public function getOnDemandWeather($location, $date)
     {
         $dt = Carbon::create($date)->getTimestamp();
@@ -29,6 +35,9 @@ class WeatherService
                           
     }
 
+    /**
+     * Fetch Data from third party API Location GeoCode
+     */
     public function getLocationInformation($name)
     {
         $appid = $this->getAppID();
@@ -36,6 +45,9 @@ class WeatherService
 
     }
 
+    /**
+     * Config APPID
+     */
     private function getAppID()
     {
         return config('services.weather.appid');

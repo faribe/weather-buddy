@@ -2,110 +2,105 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\ReportAlerts;
 use App\Http\Controllers\Controller;
 use App\Models\Location;
 use App\Services\WeatherService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class LocationController extends Controller
 {
 
+    /**
+     * Fetch and Store Location Data
+     */
+    public function fetchAndStoreLocationDatafromRequest(Request $request)
+    {
+        
+        
+
+        $messages = [
+            'required' => 'The name field is required.'
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+        ], $messages);
+ 
+        if ($validator->fails()) {
+            return response()->json([
+                "status" => "error",
+                "message" => $validator->customMessages['required'],
+            ],422);
+        }
+
+        $input = $request->all();
+
+        $name = $input['name'];
+
+        $weatherService = new WeatherService();
+        $locationData = $weatherService->getLocationInformation($name);
+        if($locationData->status() === 200 && !empty($location)){
+            $data_array = $locationData->json();
+            $data_array = $data_array[0];
+
+            $data_array['local_names'] = json_encode($data_array['local_names']);
+            $data_array['latitude'] = $data_array['lat'];
+            $data_array['longitutde'] = $data_array['lon'];
+
+            unset($data_array['lat'],$data_array['lon']);
+
+            $location = Location::create($data_array);
+
+            if($location){
+                return response()->json([
+                    "status" => "success",
+                    "message" => "Location stored",
+                ],200);
+            } else {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "no location data found!",
+                ],422);
+            }
+        } else {
+            return response()->json([
+                "status" => "error",
+                "message" => "no data found!",
+            ],422);
+        }
+        
+    }
+
+    /**
+     * Fetch and Store Location Data
+     */
     public function fetchAndStoreLocationData($name)
     {
         $weatherService = new WeatherService();
         $locationData = $weatherService->getLocationInformation($name);
-        $data_array = $locationData->json();
-        $data_array = $data_array[0];
+        if($locationData->status() === 200 && !empty($location)){
+            $data_array = $locationData->json();
+            $data_array = $data_array[0];
 
-        $data_array['local_names'] = json_encode($data_array['local_names']);
-        $data_array['latitude'] = $data_array['lat'];
-        $data_array['longitutde'] = $data_array['lon'];
+            $data_array['local_names'] = json_encode($data_array['local_names']);
+            $data_array['latitude'] = $data_array['lat'];
+            $data_array['longitutde'] = $data_array['lon'];
 
-        unset($data_array['lat'],$data_array['lon']);
+            unset($data_array['lat'],$data_array['lon']);
 
-        $location = Location::create($data_array);
+            $location = Location::create($data_array);
 
-        if($location){
-            return true;
+            if($location){
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
-
+        
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
 }

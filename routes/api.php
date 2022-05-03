@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\WeatherController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Http\Request;
@@ -19,6 +20,13 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
 
     Route::get('/', [HomeController::class, 'welcome']);
+
+    
+
+    Route::prefix('location')->group(function (){
+        Route::get('/', [LocationController::class, 'index']);
+        Route::post('/add', [LocationController::class, 'fetchAndStoreLocationDatafromRequest']);
+    });
 
     Route::prefix('weather')->group(function (){
         Route::get('/', [WeatherController::class, 'index']);

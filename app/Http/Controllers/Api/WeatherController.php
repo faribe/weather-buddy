@@ -16,6 +16,9 @@ use Illuminate\Http\Request;
 class WeatherController extends Controller
 {
 
+    /**
+     * Fetch and Store Weather Data Using Location.
+     */
     public function fetchAndStoreWeatherData(Location $location)
     {
         $weatherService = new WeatherService();
@@ -31,7 +34,10 @@ class WeatherController extends Controller
 
     }
 
-    public function updateLocationAlerts(Location $location, $alerts)
+    /**
+     * Trigger Event When there is an alert in a location.
+     */
+    private function updateLocationAlerts(Location $location, $alerts)
     {
         foreach($alerts as $alert){
             $alert['location_id'] = $location->id;
@@ -43,6 +49,9 @@ class WeatherController extends Controller
         return true;
     }
 
+    /**
+     * Fetch and Store Weather Data on Demand.
+     */
     public function fetchAndStoreWeatherDataOnDemand($location=null,$date)
     {
         if(is_null($location)){
@@ -57,6 +66,9 @@ class WeatherController extends Controller
         return $response;
     }
 
+    /**
+     * Invoke WeatherService API third party.
+     */
     private function callOnDemandService($location, $date)
     {
         $weatherService = new WeatherService();
@@ -88,6 +100,9 @@ class WeatherController extends Controller
 
     }
 
+    /**
+     * Store Data to DB.
+     */
     private function storeWeatherData(Location $location, $weatherData)
     {
         $currentWeather = false;
@@ -161,6 +176,9 @@ class WeatherController extends Controller
 
     }
 
+    /**
+     * Fetch Data from DB according to Location
+     */
     public function locationWeather($id)
     {
         $currentWeather = null;
@@ -193,6 +211,9 @@ class WeatherController extends Controller
         }
     }
 
+    /**
+     * Fetch Data from DB according to Location and Date
+     */
     public function locationWeatherByDate($id,$date)
     {
         $currentWeather = null;
@@ -257,6 +278,9 @@ class WeatherController extends Controller
         }
     }
 
+    /**
+     * Fetch Data from DB according to All sLocation and Date
+     */
     public function locationWeatherByDateAll($date)
     {
         $currentWeather = null;
@@ -310,8 +334,6 @@ class WeatherController extends Controller
                     return $response;
                 }
 
-                
-
             }
                 
         }
@@ -331,69 +353,4 @@ class WeatherController extends Controller
         
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
 }
