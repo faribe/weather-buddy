@@ -44,7 +44,7 @@ class LocationController extends Controller
             $data_array = $locationData->json();
             $data_array = $data_array[0];
 
-            $data_array['local_names'] = json_encode($data_array['local_names']);
+            $data_array['local_names'] = isset($data_array['local_names']) ?? json_encode($data_array['local_names']);
             $data_array['latitude'] = $data_array['lat'];
             $data_array['longitutde'] = $data_array['lon'];
 
@@ -56,7 +56,7 @@ class LocationController extends Controller
                 return response()->json([
                     "status" => "success",
                     "message" => "Location stored",
-                ],200);
+                ],201);
             } else {
                 return response()->json([
                     "status" => "error",
@@ -79,15 +79,18 @@ class LocationController extends Controller
     {
         $weatherService = new WeatherService();
         $locationData = $weatherService->getLocationInformation($name);
-        if($locationData->status() === 200 && !empty($location)){
+
+        if($locationData->status() === 200){
             $data_array = $locationData->json();
             $data_array = $data_array[0];
 
-            $data_array['local_names'] = json_encode($data_array['local_names']);
+            $data_array['local_names'] = isset($data_array['local_names']) ?? json_encode($data_array['local_names']);
             $data_array['latitude'] = $data_array['lat'];
             $data_array['longitutde'] = $data_array['lon'];
 
             unset($data_array['lat'],$data_array['lon']);
+
+            
 
             $location = Location::create($data_array);
 

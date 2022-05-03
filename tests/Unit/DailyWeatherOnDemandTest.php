@@ -1,18 +1,15 @@
 <?php
 
-namespace Tests\Unit;
+use App\Models\Location;
+use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-use PHPUnit\Framework\TestCase;
+uses(Tests\TestCase::class, RefreshDatabase::class);
 
-class DailyWeatherOnDemandTest extends TestCase
-{
-    /**
-     * A basic unit test example.
-     *
-     * @return void
-     */
-    public function test_example()
-    {
-        $this->assertTrue(true);
-    }
-}
+
+it('can fetch weather for a single location on demand', function () {
+    $location = Location::factory()->create();
+    $date = Carbon::now()->format('Y-m-d');
+    $response = $this->getJson("/api/v1/weather/city/{$location->id}/{$date}");
+    $response->assertStatus(200);
+});

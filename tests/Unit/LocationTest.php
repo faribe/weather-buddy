@@ -1,18 +1,19 @@
 <?php
 
-namespace Tests\Unit;
+use App\Models\Location;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-use PHPUnit\Framework\TestCase;
+uses(Tests\TestCase::class, RefreshDatabase::class);
 
-class LocationTest extends TestCase
-{
-    /**
-     * A basic unit test example.
-     *
-     * @return void
-     */
-    public function test_example()
-    {
-        $this->assertTrue(true);
-    }
-}
+it('does not create a location without a name field', function () {
+    $response = $this->postJson('/api/v1/location/add', []);
+    $response->assertStatus(422);
+});
+
+it('can create a location', function () {
+    $attributes = ['name' => 'Istanbul'];
+    $response = $this->postJson('/api/v1/location/add', $attributes);
+    $response->assertStatus(201)->assertJson(['message' => 'Location stored']);
+    $this->assertDatabaseHas('locations', $attributes);
+});
+

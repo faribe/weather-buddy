@@ -1,18 +1,13 @@
 <?php
 
-namespace Tests\Unit;
+use App\Models\Location;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-use PHPUnit\Framework\TestCase;
+uses(Tests\TestCase::class, RefreshDatabase::class);
 
-class DailyWeatherTest extends TestCase
-{
-    /**
-     * A basic unit test example.
-     *
-     * @return void
-     */
-    public function test_example()
-    {
-        $this->assertTrue(true);
-    }
-}
+
+it('can fetch weather for all locations', function () {
+    $location = Location::factory()->create();
+    $response = $this->getJson('/api/v1/weather');
+    $response->assertStatus(200);
+});
