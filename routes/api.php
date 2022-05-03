@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\WeatherController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +16,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::prefix('v1')->group(function () {
+
+    Route::get('/', [HomeController::class, 'welcome']);
+
+    Route::prefix('weather')->group(function (){
+        Route::get('/', [WeatherController::class, 'index']);
+        Route::get('/all/{date}', [WeatherController::class, 'locationWeatherByDateAll']);
+        Route::get('city/{id}', [WeatherController::class, 'locationWeather']);
+        Route::get('city/{id}/{date}', [WeatherController::class, 'locationWeatherByDate']);
+    });
+
 });

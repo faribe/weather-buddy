@@ -14,14 +14,14 @@ class LocationController extends Controller
     {
         $weatherService = new WeatherService();
         $locationData = $weatherService->getLocationInformation($name);
-        $data_array = (array) $locationData;
+        $data_array = $locationData->json();
+        $data_array = $data_array[0];
 
-        $data_array['local_names'] = json_encode((array) $data_array['local_names']);
+        $data_array['local_names'] = json_encode($data_array['local_names']);
         $data_array['latitude'] = $data_array['lat'];
         $data_array['longitutde'] = $data_array['lon'];
 
         unset($data_array['lat'],$data_array['lon']);
-
 
         $location = Location::create($data_array);
 

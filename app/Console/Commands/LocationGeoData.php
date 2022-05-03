@@ -58,8 +58,8 @@ class LocationGeoData extends Command
         $location = app(LocationController::class)->fetchAndStoreLocationData($name);
 
         if($location)
-            $this->info('The command was successful!');
+            $this->info('Location data for '.$name.' was successfully stored!');
         else
-            $this->error('Something went wrong!');
+            $this->error('Something went wrong! - Location:'.$name);
     }
 }
