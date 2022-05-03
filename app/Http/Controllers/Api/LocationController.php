@@ -18,8 +18,6 @@ class LocationController extends Controller
     public function fetchAndStoreLocationDatafromRequest(Request $request)
     {
         
-        
-
         $messages = [
             'required' => 'The name field is required.'
         ];
@@ -41,7 +39,8 @@ class LocationController extends Controller
 
         $weatherService = new WeatherService();
         $locationData = $weatherService->getLocationInformation($name);
-        if($locationData->status() === 200 && !empty($location)){
+
+        if($locationData->status() === 200 && !empty($locationData)){
             $data_array = $locationData->json();
             $data_array = $data_array[0];
 

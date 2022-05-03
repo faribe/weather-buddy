@@ -153,13 +153,30 @@ class WeatherController extends Controller
         $locations = Location::all();
 
         $currentWeather = null;
+        $skip = false;
 
         foreach($locations as $location){
-            $latestWeather = CurrentWeather::where('locations_id', $location->id)->orderBy('dt', 'desc')->first();
-            $weeklyWeather = WeeklyWeather::where('current_weather_id', $latestWeather->id)->get();
+            $latestWeather = CurrentWeather::where('locations_id', $location->id)->orderBy('dt', 'desc')->whereDate('created_at', Carbon::today())->first();
 
-            $currentWeather[strtolower($location->name)]['current'] = $latestWeather;
-            $currentWeather[strtolower($location->name)]['weekly'] = $weeklyWeather;
+            if(!$latestWeather){
+                $updated = $this->updateWeatherToLatest($locations);
+
+                if($updated)
+                    return $this->index();
+                else{
+                    $skip = true;
+                    break;
+                }
+                    
+            }
+
+            if(!$skip && $latestWeather){
+                $weeklyWeather = WeeklyWeather::where('current_weather_id', $latestWeather->id)->get();
+
+                $currentWeather[strtolower($location->name)]['current'] = $latestWeather;
+                $currentWeather[strtolower($location->name)]['weekly'] = $weeklyWeather;
+            }
+            
         }
 
         if(!is_null($currentWeather)){
@@ -176,6 +193,15 @@ class WeatherController extends Controller
 
     }
 
+    public function updateWeatherToLatest($locations)
+    {
+        $done = false;
+        foreach($locations as $location){
+            $done = $this->fetchAndStoreWeatherData($location);
+        }
+        return $done;
+    }
+
     /**
      * Fetch Data from DB according to Location
      */
@@ -183,13 +209,27 @@ class WeatherController extends Controller
     {
         $currentWeather = null;
         $location = Location::find($id);
+        $skip = false;
 
         if($location){
-            $latestWeather = CurrentWeather::where('locations_id', $location->id)->orderBy('id', 'desc')->first();
-            $weeklyWeather = WeeklyWeather::where('current_weather_id', $latestWeather->id)->get();
+            $latestWeather = CurrentWeather::where('locations_id', $location->id)->orderBy('id', 'desc')->whereDate('created_at', Carbon::today())->first();
 
-            $currentWeather[strtolower($location->name)]['current'] = $latestWeather;
-            $currentWeather[strtolower($location->name)]['weekly'] = $weeklyWeather;
+            if(!$latestWeather){
+                $updated = $this->fetchAndStoreWeatherData($location);
+
+                if($updated)
+                    return $this->locationWeather($location->id);
+                else
+                    $skip = true;
+
+            }
+
+            if(!$skip && $latestWeather){
+                $weeklyWeather = WeeklyWeather::where('current_weather_id', $latestWeather->id)->get();
+
+                $currentWeather[strtolower($location->name)]['current'] = $latestWeather;
+                $currentWeather[strtolower($location->name)]['weekly'] = $weeklyWeather;
+            }
 
             if(!is_null($currentWeather)){
                 return response()->json([

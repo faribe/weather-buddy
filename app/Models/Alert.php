@@ -10,4 +10,5 @@ class Alert extends Model
     use HasFactory;
     
     protected $guarded = [];
+
 }

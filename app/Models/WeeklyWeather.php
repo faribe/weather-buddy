@@ -10,4 +10,11 @@ class WeeklyWeather extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    protected $casts = [
+        'temperature'    => 'array',
+        'feels_like'     => 'array',
+        'weather'        => 'array',
+        'rain'           => 'array',
+    ];
 }

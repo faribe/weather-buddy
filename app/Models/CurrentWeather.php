@@ -10,4 +10,8 @@ class CurrentWeather extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    protected $casts = [
+        'weather'           => 'array',
+    ];
 }
