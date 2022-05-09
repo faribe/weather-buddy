@@ -21,11 +21,8 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/', [HomeController::class, 'welcome']);
 
-    
-
     Route::prefix('location')->group(function (){
-        Route::get('/', [LocationController::class, 'index']);
-        Route::post('/add', [LocationController::class, 'fetchAndStoreLocationDatafromRequest']);
+        Route::post('/add', [LocationController::class, 'store']);
     });
 
     Route::prefix('weather')->group(function (){
