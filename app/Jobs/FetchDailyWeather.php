@@ -4,6 +4,8 @@ namespace App\Jobs;
 
 use App\Http\Controllers\Api\WeatherController;
 use App\Models\Location;
+use App\Services\LocalWeather;
+use App\Services\LocationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,6 +18,9 @@ class FetchDailyWeather implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    private $locationService;
+    private $localWeatherService;
+
     /**
      * Create a new job instance.
      *
@@ -23,7 +28,8 @@ class FetchDailyWeather implements ShouldQueue
      */
     public function __construct()
     {
-        //
+        $this->locationService = new LocationService;
+        $this->localWeatherService = new LocalWeather;
     }
 
     /**
@@ -33,11 +39,10 @@ class FetchDailyWeather implements ShouldQueue
      */
     public function handle()
     {
-        $locations = Location::all();
+        $locations = $this->locationService->getAllLocations();
 
         foreach($locations as $location){
-            $data = app(WeatherController::class)->fetchAndStoreWeatherData($location);
-
+            $data = $this->localWeatherService->getLatestWeatherForLocationFromApi($location);
             if($data)
                 Log::info('The weather successful! - '.$location->name);
             else

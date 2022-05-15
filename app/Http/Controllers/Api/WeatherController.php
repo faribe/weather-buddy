@@ -8,46 +8,57 @@ use App\Models\Alert;
 use App\Models\CurrentWeather;
 use App\Models\Location;
 use App\Models\WeeklyWeather;
+use App\Services\LocalWeather;
 use App\Services\WeatherService;
 use Carbon\Carbon;
 use DateTime;
-use Illuminate\Http\Request;
 
 class WeatherController extends Controller
 {
+    private $localWeather;
 
-    /**
-     * Fetch and Store Weather Data Using Location.
-     */
-    public function fetchAndStoreWeatherData(Location $location)
+    public function __construct()
     {
-        $weatherService = new WeatherService();
-        $weatherData = $weatherService->getDailyWeather($location);
-
-        $currentWeather = $this->storeWeatherData($location, $weatherData);
-        
-        if($currentWeather){
-            return true;
-        } else {
-            return false;
-        }
-
+        $this->localWeather = new LocalWeather;
     }
+
+    public function index()
+    {
+        return $this->localWeather->handle();
+    }
+
+    // /**
+    //  * Fetch and Store Weather Data Using Location.
+    //  */
+    // public function fetchAndStoreWeatherData(Location $location)
+    // {
+    //     $weatherService = new WeatherService();
+    //     $weatherData = $weatherService->getDailyWeather($location);
+
+    //     $currentWeather = $this->storeWeatherData($location, $weatherData);
+        
+    //     if($currentWeather){
+    //         return true;
+    //     } else {
+    //         return false;
+    //     }
+
+    // }
 
     /**
      * Trigger Event When there is an alert in a location.
      */
-    private function updateLocationAlerts(Location $location, $alerts)
-    {
-        foreach($alerts as $alert){
-            $alert['location_id'] = $location->id;
-            $alert['tags'] = json_encode($alert['tags']);
+    // private function updateLocationAlerts(Location $location, $alerts)
+    // {
+    //     foreach($alerts as $alert){
+    //         $alert['location_id'] = $location->id;
+    //         $alert['tags'] = json_encode($alert['tags']);
             
-            ReportAlerts::dispatch($alert);
-        }
+    //         ReportAlerts::dispatch($alert);
+    //     }
 
-        return true;
-    }
+    //     return true;
+    // }
 
     /**
      * Fetch and Store Weather Data on Demand.
@@ -103,95 +114,47 @@ class WeatherController extends Controller
     /**
      * Store Data to DB.
      */
-    private function storeWeatherData(Location $location, $weatherData)
-    {
-        $currentWeather = false;
+    // private function storeWeatherData(Location $location, $weatherData)
+    // {
+    //     $currentWeather = false;
 
-        if(isset($weatherData['current'])) {
-            $currentWeatherData = $weatherData['current'];
-            $currentWeatherData['locations_id'] = $location->id;
-            $currentWeatherData['temperature'] = $currentWeatherData['temp'];
-            $currentWeatherData['weather'] = json_encode($weatherData['current']['weather'][0]);
-            $currentWeatherData['rain'] = isset($currentWeatherData['temp']) ? json_encode($currentWeatherData['temp']) : null;
-            unset($currentWeatherData['temp']);
+    //     if(isset($weatherData['current'])) {
+    //         $currentWeatherData = $weatherData['current'];
+    //         $currentWeatherData['locations_id'] = $location->id;
+    //         $currentWeatherData['temperature'] = $currentWeatherData['temp'];
+    //         $currentWeatherData['weather'] = json_encode($weatherData['current']['weather'][0]);
+    //         $currentWeatherData['rain'] = isset($currentWeatherData['temp']) ? json_encode($currentWeatherData['temp']) : null;
+    //         unset($currentWeatherData['temp']);
 
-            if(isset($currentWeatherData['alerts'])){
-                $this->updateLocationAlerts($location, $currentWeatherData['alerts']);
-            }
+    //         if(isset($currentWeatherData['alerts'])){
+    //             $this->updateLocationAlerts($location, $currentWeatherData['alerts']);
+    //         }
 
-            $currentWeather = CurrentWeather::where('locations_id', $location->id)->where('dt',$currentWeatherData['dt'])->get();
+    //         $currentWeather = CurrentWeather::where('locations_id', $location->id)->where('dt',$currentWeatherData['dt'])->get();
 
-            if($currentWeather->count() == 0)
-                $currentWeather = CurrentWeather::create($currentWeatherData);
+    //         if($currentWeather->count() == 0)
+    //             $currentWeather = CurrentWeather::create($currentWeatherData);
 
-            if(isset($weatherData['daily'])){
-                $weeklyWeatherData = $weatherData['daily'];
+    //         if(isset($weatherData['daily'])){
+    //             $weeklyWeatherData = $weatherData['daily'];
     
-                foreach($weeklyWeatherData as $datum){
-                    $datum['current_weather_id'] = $currentWeather->id;
-                    $datum['temperature'] = json_encode($datum['temp']);
-                    $datum['feels_like'] = json_encode($datum['feels_like']);
-                    $datum['weather'] = json_encode($datum['weather'][0]);
-                    unset($datum['temp']);
+    //             foreach($weeklyWeatherData as $datum){
+    //                 $datum['current_weather_id'] = $currentWeather->id;
+    //                 $datum['temperature'] = json_encode($datum['temp']);
+    //                 $datum['feels_like'] = json_encode($datum['feels_like']);
+    //                 $datum['weather'] = json_encode($datum['weather'][0]);
+    //                 unset($datum['temp']);
     
-                    WeeklyWeather::create($datum);
-                }
-            }
-        }
+    //                 WeeklyWeather::create($datum);
+    //             }
+    //         }
+    //     }
         
-        return $currentWeather;
+    //     return $currentWeather;
         
-    }
+    // }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        $locations = Location::all();
-
-        $currentWeather = null;
-        $skip = false;
-
-        foreach($locations as $location){
-            $latestWeather = CurrentWeather::where('locations_id', $location->id)->orderBy('dt', 'desc')->whereDate('created_at', Carbon::today())->first();
-
-            if(!$latestWeather){
-                $updated = $this->updateWeatherToLatest($locations);
-
-                if($updated)
-                    return $this->index();
-                else{
-                    $skip = true;
-                    break;
-                }
-                    
-            }
-
-            if(!$skip && $latestWeather){
-                $weeklyWeather = WeeklyWeather::where('current_weather_id', $latestWeather->id)->get();
-
-                $currentWeather[strtolower($location->name)]['current'] = $latestWeather;
-                $currentWeather[strtolower($location->name)]['weekly'] = $weeklyWeather;
-            }
-            
-        }
-
-        if(!is_null($currentWeather)){
-            return response()->json([
-                "status" => "success",
-                "data" => $currentWeather
-            ],200);
-        } else {
-            return response()->json([
-                "status" => "error",
-                "message" => "No Data Found!",
-            ],422);
-        }
-
-    }
+    
 
     public function updateWeatherToLatest($locations)
     {

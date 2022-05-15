@@ -4,28 +4,43 @@ namespace App\Services;
 
 use App\Definitions\HttpCode;
 use App\Http\Requests\LocationRequest;
+use App\Http\Resources\LocationResource;
 use App\Models\Location;
 
 class LocationService
 {
 
-    private $weatherService;
+    private $weatherServiceApi;
     private $location;
 
     public function __construct()
     {
-        $this->weatherService = new WeatherService;
+        $this->weatherServiceApi = new WeatherServiceApi;
     }
+
 
     public function handle(LocationRequest $request)
     {
         $this->setLocation($request->name);
-        return $this->checkOrStore();
+        return $this->getLocationFromDB() ? $this->getLocationFromDB() : $this->getLocationFromWeatherService();
     }
 
-    public function checkOrStore()
+    public function getAll()
     {
-        return $this->getLocationFromDB() ? $this->getLocationFromDB() : $this->getLocationFromWeatherService();
+        $locations = LocationResource::collection($this->getAllLocations());
+
+        if($locations){
+            return response()->json([
+                "status" => "success",
+                "data" => $locations
+            ],HttpCode::OK);
+        } else {
+            return response()->json([
+                "status" => "error",
+                "message" => "no location found",
+            ],HttpCode::NOT_FOUND);
+        }
+
     }
 
     public function createFromWeatherServiceData($locationData)
@@ -55,7 +70,7 @@ class LocationService
         } else {
             return response()->json([
                 "status" => "error",
-                "message" => "no data returned from location service!",
+                "message" => "no data returned from location service",
             ],HttpCode::UNPROCESSABLE_ENTITY);
         }
     }
@@ -77,9 +92,12 @@ class LocationService
         }
     }
 
-    public function getLocationFromWeatherService()
+    public function getLocationFromWeatherService($name=null)
     {
-        $locationData = $this->weatherService->getLocationInformation($this->getLocation());
+        if(is_null($name))
+            $name = $this->getLocation();
+
+        $locationData = $this->weatherServiceApi->getLocationInformation($name);
         return $this->createFromWeatherServiceData($locationData);
     }
 
@@ -91,6 +109,16 @@ class LocationService
     public function getLocation()
     {
         return $this->location;
+    }
+
+    public function getAllLocations()
+    {
+        return Location::all();
+    }
+
+    public function fetchLocation($id)
+    {
+        return Location::find($id);
     }
 
     public function dataMapping($data)

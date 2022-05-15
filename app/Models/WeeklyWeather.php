@@ -17,4 +17,9 @@ class WeeklyWeather extends Model
         'weather'        => 'array',
         'rain'           => 'array',
     ];
+
+    public function currentWeather()
+    {
+        return $this->belongsTo(CurrentWeather::class);
+    }
 }

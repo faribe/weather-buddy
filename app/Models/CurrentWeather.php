@@ -12,6 +12,11 @@ class CurrentWeather extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'weather'           => 'array',
+        'weather' => 'array',
     ];
+
+    public function weeklyWeather()
+    {
+        return $this->hasMany(WeeklyWeather::class);
+    }
 }

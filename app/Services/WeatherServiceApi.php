@@ -2,15 +2,16 @@
 
 namespace App\Services;
 
+use App\Models\Location;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 
-class WeatherService
+class WeatherServiceApi
 {
     /**
      * Fetch Data from third party API Daily Weather
      */
-    public function getDailyWeather($location)
+    public function getDailyWeather(Location $location)
     {
         $lat = $location->latitude;
         $lon = $location->longitutde;
@@ -22,7 +23,7 @@ class WeatherService
     /**
      * Fetch Data from third party API Daily Weather On Demand
      */
-    public function getOnDemandWeather($location, $date)
+    public function getOnDemandWeather(Location $location, $date)
     {
         $dt = Carbon::create($date)->getTimestamp();
         $lat = $location->latitude;

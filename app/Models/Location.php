@@ -12,6 +12,6 @@ class Location extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'local_names'           => 'array',
+        'local_names' => 'array',
     ];
 }

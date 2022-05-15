@@ -15,6 +15,11 @@ class LocationController extends Controller
         $this->locationService = new LocationService;
     }
 
+    public function index()
+    {
+        return $this->locationService->getAll();
+    }
+
     public function store(LocationRequest $request)
     {
         return $this->locationService->handle($request);
