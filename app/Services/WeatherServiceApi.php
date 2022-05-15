@@ -30,7 +30,7 @@ class WeatherServiceApi
         $lon = $location->longitutde;
         $appid = $this->getAppID();
 
-        return Http::get("https://api.openweathermap.org/data/2.5/onecall/timemachine?lat=${lat}&lon=${lon}&dt=${dt}&appid=${appid}");              
+        return Http::get("https://api.openweathermap.org/data/2.5/onecall/timemachine?lat=${lat}&lon=${lon}&dt=${dt}&exclude=minutely,hourly&appid=${appid}");              
     }
 
     /**

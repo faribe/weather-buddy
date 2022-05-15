@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Events\ReportAlerts;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\WeatherRequest;
 use App\Models\Alert;
 use App\Models\CurrentWeather;
 use App\Models\Location;
@@ -25,6 +26,11 @@ class WeatherController extends Controller
     public function index()
     {
         return $this->localWeather->handle();
+    }
+
+    public function weatherByDateForAllLocations(WeatherRequest $weatherRequest)
+    {
+        return $this->localWeather->handleWithRequest($weatherRequest);
     }
 
     // /**
@@ -217,7 +223,7 @@ class WeatherController extends Controller
     /**
      * Fetch Data from DB according to Location and Date
      */
-    public function locationWeatherByDate($id,$date)
+    public function locationWeatherByDate(WeatherRequest $weatherRequest)
     {
         $currentWeather = null;
         $location = Location::find($id);
@@ -284,74 +290,76 @@ class WeatherController extends Controller
     /**
      * Fetch Data from DB according to All sLocation and Date
      */
-    public function locationWeatherByDateAll($date)
+    public function locationWeatherByDateAll(WeatherRequest $weatherRequest)
     {
-        $currentWeather = null;
-        $locations = Location::all();
-        $dt = DateTime::createFromFormat("Y-m-d", $date);
 
-        if($dt === false){
-            return response()->json([
-                "status" => "error",
-                "message" => "invalide date format, YYYY-MM-DD is required!",
-            ],422);
-        }
+        dd($weatherRequest->all());
+        // $currentWeather = null;
+        // $locations = Location::all();
+        // $dt = DateTime::createFromFormat("Y-m-d", $date);
 
-        foreach($locations as $location){
+        // if($dt === false){
+        //     return response()->json([
+        //         "status" => "error",
+        //         "message" => "invalide date format, YYYY-MM-DD is required!",
+        //     ],422);
+        // }
 
-            $start = Carbon::create($date.' 00:00:00')->getTimestamp();
-            $end = Carbon::create($date.' 23:59:59')->getTimestamp();
+        // foreach($locations as $location){
 
-            $latestWeather = CurrentWeather::where('locations_id', $location->id)
-                ->where('dt','>=', $start)
-                ->where('dt','<=', $end)
-                ->orderBy('id', 'desc')
-                ->first();
+        //     $start = Carbon::create($date.' 00:00:00')->getTimestamp();
+        //     $end = Carbon::create($date.' 23:59:59')->getTimestamp();
+
+        //     $latestWeather = CurrentWeather::where('locations_id', $location->id)
+        //         ->where('dt','>=', $start)
+        //         ->where('dt','<=', $end)
+        //         ->orderBy('id', 'desc')
+        //         ->first();
 
             
-            if($latestWeather){
-                $weeklyWeather = WeeklyWeather::where('current_weather_id', $latestWeather->id)->get();
+        //     if($latestWeather){
+        //         $weeklyWeather = WeeklyWeather::where('current_weather_id', $latestWeather->id)->get();
 
-                $currentWeather[strtolower($location->name)]['current'] = $latestWeather ?? $latestWeather;
-                $currentWeather[strtolower($location->name)]['weekly'] = $weeklyWeather ?? $weeklyWeather;
+        //         $currentWeather[strtolower($location->name)]['current'] = $latestWeather ?? $latestWeather;
+        //         $currentWeather[strtolower($location->name)]['weekly'] = $weeklyWeather ?? $weeklyWeather;
   
-            } else {
+        //     } else {
 
-                $response = $this->fetchAndStoreWeatherDataOnDemand($location,$date);
+        //         $response = $this->fetchAndStoreWeatherDataOnDemand($location,$date);
 
-                if($response->status() === 200){
-                    $latestWeather2 = CurrentWeather::where('locations_id', $location->id)
-                    ->where('dt','>=', $start)
-                    ->where('dt','<=', $end)
-                    ->orderBy('id', 'desc')
-                    ->first();
+        //         if($response->status() === 200){
+        //             $latestWeather2 = CurrentWeather::where('locations_id', $location->id)
+        //             ->where('dt','>=', $start)
+        //             ->where('dt','<=', $end)
+        //             ->orderBy('id', 'desc')
+        //             ->first();
 
-                    if($latestWeather2){
-                        $weeklyWeather2 = WeeklyWeather::where('current_weather_id', $latestWeather2->id)->get();
+        //             if($latestWeather2){
+        //                 $weeklyWeather2 = WeeklyWeather::where('current_weather_id', $latestWeather2->id)->get();
         
-                        $currentWeather[strtolower($location->name)]['current'] = $latestWeather2 ?? $latestWeather2;
-                        $currentWeather[strtolower($location->name)]['weekly'] = $weeklyWeather2 ?? $weeklyWeather2;
+        //                 $currentWeather[strtolower($location->name)]['current'] = $latestWeather2 ?? $latestWeather2;
+        //                 $currentWeather[strtolower($location->name)]['weekly'] = $weeklyWeather2 ?? $weeklyWeather2;
           
-                    }
-                } else {
-                    return $response;
-                }
+        //             }
+        //         } else {
+        //             return $response;
+        //         }
 
-            }
+        //     }
                 
-        }
+        // }
 
-        if(!is_null($currentWeather)){
-            return response()->json([
-                "status" => "success",
-                "data" => $currentWeather
-            ],200);
-        } else {
-            return response()->json([
-                "status" => "error",
-                "message" => "No Data Found!",
-            ],422);
-        } 
+        // if(!is_null($currentWeather)){
+        //     return response()->json([
+        //         "status" => "success",
+        //         "data" => $currentWeather
+        //     ],200);
+        // } else {
+        //     return response()->json([
+        //         "status" => "error",
+        //         "message" => "No Data Found!",
+        //     ],422);
+        // } 
 
         
     }

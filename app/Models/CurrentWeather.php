@@ -12,7 +12,10 @@ class CurrentWeather extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'weather' => 'array',
+        'dt'        => 'datetime:Y-m-d, hh:i:s',
+        'sunrise'   => 'datetime:Y-m-d, H:i:s',
+        'sunset'    => 'datetime:Y-m-d, H:i:s',
+        'weather'   => 'array',
     ];
 
     public function weeklyWeather()

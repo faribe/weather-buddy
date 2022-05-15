@@ -14,4 +14,5 @@ class Location extends Model
     protected $casts = [
         'local_names' => 'array',
     ];
+
 }

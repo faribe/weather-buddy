@@ -2,13 +2,15 @@
 
 namespace App\Services;
 
-use App\Definitions\HttpCode;
 use App\Http\Requests\LocationRequest;
 use App\Http\Resources\LocationResource;
 use App\Models\Location;
+use App\Traits\ApiResponses;
 
 class LocationService
 {
+
+    use ApiResponses;
 
     private $weatherServiceApi;
     private $location;
@@ -25,68 +27,15 @@ class LocationService
         return $this->getLocationFromDB() ? $this->getLocationFromDB() : $this->getLocationFromWeatherService();
     }
 
-    public function getAll()
-    {
-        $locations = LocationResource::collection($this->getAllLocations());
-
-        if($locations){
-            return response()->json([
-                "status" => "success",
-                "data" => $locations
-            ],HttpCode::OK);
-        } else {
-            return response()->json([
-                "status" => "error",
-                "message" => "no location found",
-            ],HttpCode::NOT_FOUND);
-        }
-
-    }
-
-    public function createFromWeatherServiceData($locationData)
-    {
-        if($locationData->status() === 200 && !empty($locationData->json())){
-            $data_array = $this->dataMapping($locationData->json()[0]);
-            $check = $this->getLocationFromDB($data_array['name']);
-            if(!$check){
-                $location = Location::firstOrCreate($data_array);
-
-                if($location){
-                    return response()->json([
-                        "status" => "success",
-                        "message" => "location stored",
-                    ],HttpCode::CREATED);
-                } else {
-                    return response()->json([
-                        "status" => "error",
-                        "message" => "error occured while storing location",
-                    ],HttpCode::UNPROCESSABLE_ENTITY);
-                }
-            }
-            else {
-                return $check;
-            }
-                
-        } else {
-            return response()->json([
-                "status" => "error",
-                "message" => "no data returned from location service",
-            ],HttpCode::UNPROCESSABLE_ENTITY);
-        }
-    }
-
     public function getLocationFromDB($name=null)
     {
         if(is_null($name))
             $name = $this->getLocation();
 
-        $location = Location::where('name', $name)->first();
+        $location = $this->fetchLocationByName($name);
 
         if($location){
-            return response()->json([
-                "status" => "found",
-                "message" => "location already exisits",
-            ],HttpCode::FOUND);
+            return $this->okResponse(new LocationResource($location));
         } else {
             return false;
         }
@@ -101,12 +50,32 @@ class LocationService
         return $this->createFromWeatherServiceData($locationData);
     }
 
-    public function setLocation($location)
+    private function createFromWeatherServiceData($locationData)
+    {
+        if($locationData->status() === 200 && !empty($locationData->json())){
+            $data_array = $this->dataMapping($locationData->json()[0]);
+            $check = $this->getLocationFromDB($data_array['name']);
+            if(!$check){
+                $location = $this->createLocation($data_array);
+
+                if($location){
+                    return $this->createdResponse(new LocationResource($location));
+                } else {
+                    return $this->notFoundResponse([],"error occured while storing location");
+                }
+            }
+                
+        } else {
+            return $this->unprocessableResponse([],"no data returned from location service");
+        }
+    }
+
+    private function setLocation($location)
     {
         $this->location = ucwords($location);
     }
 
-    public function getLocation()
+    private function getLocation()
     {
         return $this->location;
     }
@@ -121,7 +90,29 @@ class LocationService
         return Location::find($id);
     }
 
-    public function dataMapping($data)
+    public function fetchLocationByName($name)
+    {
+        return Location::whereName($name)->first();
+    }
+
+    private function createLocation($data)
+    {
+        return Location::firstOrCreate($data);
+    }
+
+    public function getAll()
+    {
+        $locations = LocationResource::collection($this->getAllLocations());
+
+        if($locations){
+            return $this->okResponse($locations);
+        } else {
+            return $this->notFoundResponse([],"no location found");
+        }
+
+    }
+
+    private function dataMapping($data)
     {
         $data['local_names'] = isset($data['local_names']) ? json_encode($data['local_names']) : null;
         $data['latitude'] = $data['lat'];

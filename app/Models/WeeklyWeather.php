@@ -12,6 +12,11 @@ class WeeklyWeather extends Model
     protected $guarded = [];
 
     protected $casts = [
+        'dt'             => 'datetime:Y-m-d, H:i:s',
+        'sunrise'        => 'datetime:Y-m-d, H:i:s',
+        'sunset'         => 'datetime:Y-m-d, H:i:s',
+        'moonrise'       => 'datetime:Y-m-d, H:i:s',
+        'moonset'        => 'datetime:Y-m-d, H:i:s',
         'temperature'    => 'array',
         'feels_like'     => 'array',
         'weather'        => 'array',
