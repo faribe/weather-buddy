@@ -28,9 +28,8 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('weather')->group(function (){
         Route::get('/', [WeatherController::class, 'index']);
-        Route::get('/all', [WeatherController::class, 'weatherByDateForAllLocations']);
-        // Route::get('city/{id}', [WeatherController::class, 'locationWeather']);
-        // Route::get('city/{id}/{date}', [WeatherController::class, 'locationWeatherByDate']);
+        Route::get('all', [WeatherController::class, 'weatherByDate']);
+        Route::get('city', [WeatherController::class, 'weatherByCity']);
     });
 
 });

@@ -39,7 +39,17 @@ class LocalWeather
 
     private function getForSingleLocation($location, $date)
     {
-        # code...
+        $weatherData = null;
+        $location = $this->locationService->fetchLocation($location);
+        $currentWeather = $this->fetchCurrentWeatherDataForLocation($location, $date);
+        $weatherData[strtolower($location->name)]['current'] = new CurrentWeatherResource($currentWeather);
+        $weatherData[strtolower($location->name)]['weekly'] = $currentWeather->weeklyWeather->isNotEmpty() ? WeeklyWeatherResource::collection($currentWeather->weeklyWeather) : null;
+
+        if(!is_null($weatherData)){
+            return $this->okResponse($weatherData);
+        } else {
+            return $this->unprocessableResponse([],"no data returned");
+        }
     }
 
     private function getForAllLocations($date=null)

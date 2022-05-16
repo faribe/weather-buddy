@@ -28,7 +28,12 @@ class WeatherController extends Controller
         return $this->localWeather->handle();
     }
 
-    public function weatherByDateForAllLocations(WeatherRequest $weatherRequest)
+    public function weatherByDate(WeatherRequest $weatherRequest)
+    {
+        return $this->localWeather->handleWithRequest($weatherRequest);
+    }
+
+    public function weatherByCity(WeatherRequest $weatherRequest)
     {
         return $this->localWeather->handleWithRequest($weatherRequest);
     }
