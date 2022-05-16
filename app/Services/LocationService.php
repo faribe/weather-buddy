@@ -102,10 +102,10 @@ class LocationService
 
     public function getAll()
     {
-        $locations = LocationResource::collection($this->getAllLocations());
+        $locations = $this->getAllLocations();
 
-        if($locations){
-            return $this->okResponse($locations);
+        if($locations->isNotEmpty()){
+            return $this->okResponse(LocationResource::collection($locations));
         } else {
             return $this->notFoundResponse([],"no location found");
         }
